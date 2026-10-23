@@ -2,7 +2,7 @@
 # Run the embedded maintenance agent. Usage: bash 10-sistem/bakim/bakim.sh [--raporla] [--otomatik] [--cli claude|codex|opencode]
 #   --raporla   diagnose only, change nothing
 #   --otomatik  non-interactive (used by basla.sh on first run / CI); still never runs sudo/apt/login
-#   --cli       force a CLI; default: first logged-in of claude → codex → opencode (Aşama 2: codex/opencode runners)
+#   --cli       force a CLI; default: first installed of claude → codex → opencode (login is not checked here)
 # Feeds BAKIMCI.md + denetle.sh --tam output + bilinen-sorunlar.md to the CLI in print mode.
 set -uo pipefail
 

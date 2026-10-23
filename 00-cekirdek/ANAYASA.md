@@ -1,6 +1,6 @@
 # ANAYASA — Atölyenin düzen kuralları
 
-Sürüm: 1.0 · Kabul: 2026-10-23 · **Yalnızca insan düzenler.** Her değişiklik `SURUM.md`'ye major satırı olarak işlenir.
+Sürüm: 1.1 · Kabul: 2026-10-23 · **Yalnızca insan düzenler.** Her değişiklik `SURUM.md`'ye major satırı olarak işlenir.
 Ajanlar bu dosyayı değiştiremez (settings deny + hook); değişiklik önerir, insan uygular.
 
 ## 1. Amaç ve tek ilke

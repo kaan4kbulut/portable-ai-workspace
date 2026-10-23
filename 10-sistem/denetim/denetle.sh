@@ -87,8 +87,9 @@ if [ -s "$KURAL/sir-desenleri.txt" ] && [ ${#DOSYALAR[@]} -gt 0 ]; then
 fi
 
 # "./script" calls in tracked docs/scripts (portability)
-grep -rnE '(^|[[:space:]"])\./[a-z0-9-]+\.(sh|py)\b' --include='*.sh' --include='*.json' --include='*.py' . 2>/dev/null \
-  | grep -v '^./.git/' | grep -v '^./90-dis-kaynaklar/' | grep -v '^./30-projeler/' | grep -v 'denetle.sh' | head -5 | while read -r s; do u "nokta-betik · $s · bash yol/betik.sh kullan (ANAYASA 2.2)"; done
+grep -rnE '(^|[[:space:]"])\./[a-z0-9-]+\.(sh|py)\b' --include='*.sh' --include='*.json' --include='*.py' \
+  --exclude-dir=.git --exclude-dir=90-dis-kaynaklar --exclude-dir=30-projeler --exclude-dir=node_modules . 2>/dev/null \
+  | grep -v 'denetle.sh' | head -5 | while read -r s; do u "nokta-betik · $s · bash yol/betik.sh kullan (ANAYASA 2.2)"; done
 
 # ---------------------------------------------------------------- README per tracked dir, depth
 mapfile -t DIZINLER < <(printf '%s\n' "${DOSYALAR[@]}" | xargs -r -d '\n' -n1 dirname | sort -u | grep -v '^\.$')

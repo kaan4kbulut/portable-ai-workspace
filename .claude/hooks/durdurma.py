@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Stop hook: once per session, remind to write a handover note with /kapat. Never blocks.
 
-Marker file 10-sistem/durum/<host>/oturum-<session_id>.isaret prevents repeats. Silent when stop_hook_active.
+10-sistem/durum/<host>/son-hatirlatma.txt holds the last 20 reminded session_ids (one file, bounded; concurrent sessions ok).
+Silent when stop_hook_active.
 """
 import json
 import os
@@ -20,12 +21,18 @@ def main():
     host = socket.gethostname().split(".")[0]
     sid = (girdi.get("session_id") or "bilinmiyor")[:36]
     durum = os.path.join(kok, "10-sistem", "durum", host)
-    isaret = os.path.join(durum, f"oturum-{sid}.isaret")
-    if os.path.exists(isaret):
+    isaret = os.path.join(durum, "son-hatirlatma.txt")
+    try:
+        with open(isaret, encoding="utf-8") as f:
+            onceki = [s.strip() for s in f if s.strip()]
+    except OSError:
+        onceki = []
+    if sid in onceki:
         sys.exit(0)
     try:
         os.makedirs(durum, exist_ok=True)
-        open(isaret, "w").close()
+        with open(isaret, "w", encoding="utf-8") as f:
+            f.write("\n".join((onceki + [sid])[-20:]) + "\n")
     except OSError:
         sys.exit(0)
     print(json.dumps({

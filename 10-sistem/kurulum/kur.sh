@@ -74,7 +74,7 @@ fi
 # ---------------------------------------------------------------- 3. araçlar
 adim "3/8 Araçlar (eksikse kurulur, giriş yapılmaz)"
 if cevrimici_mi "$KOK" || timeout 4 curl -fsI https://github.com >/dev/null 2>&1; then
-  for s in node uv gh claude codex opencode agy docker; do
+  for s in node uv gh claude codex opencode agy cc-safety-net docker; do
     [ -f "$DIR/araclar/$s.sh" ] || continue
     if [ "$KURU" = 1 ]; then log "  [kuru] bash araclar/$s.sh"; else bash "$DIR/araclar/$s.sh" || uyar "$s kurulamadı (bkz. yukarı)"; fi
   done
@@ -103,6 +103,9 @@ if fs_kisitli "$KOK"; then
 fi
 calistir git -C "$KOK" config core.hooksPath 10-sistem/denetim/git-hooks
 ok "core.hooksPath = 10-sistem/denetim/git-hooks"
+# ANAYASA: filesystem-level read-only as a third layer (settings deny + hooks can be bypassed by interpreters).
+# The human edits it with: chmod u+w 00-cekirdek/ANAYASA.md && <editor> && chmod 444 00-cekirdek/ANAYASA.md
+fs_kisitli "$KOK" || calistir chmod 444 "$KOK/00-cekirdek/ANAYASA.md"
 
 # ---------------------------------------------------------------- 5. dizinler
 adim "5/8 Git dışı çalışma dizinleri"

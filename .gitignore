@@ -19,6 +19,9 @@
 10-sistem/gunluk/*
 !10-sistem/gunluk/README.md
 
+# Alt ajan worktree'leri (Claude Code isolation: worktree)
+.claude/worktrees/
+
 # Yerel ayar ve sırlar
 **/settings.local.json
 **/CLAUDE.local.md
