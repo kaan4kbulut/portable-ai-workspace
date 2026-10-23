@@ -1,8 +1,8 @@
 {
   "autoMemoryEnabled": false,
   "attribution": {
-    "commit": false,
-    "pr": false
+    "commit": "",
+    "pr": ""
   },
   "permissions": {
     "allow": [
@@ -39,7 +39,6 @@
     ],
     "deny": [
       "Edit(./00-cekirdek/ANAYASA.md)",
-      "Write(./00-cekirdek/ANAYASA.md)",
       "Read(~/.claude/.credentials.json)",
       "Read(~/.codex/auth.json)",
       "Read(~/.gemini/**)",
