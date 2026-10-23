@@ -5,7 +5,7 @@ tools: Read, Grep, Glob, Edit, Write, Bash
 permissionMode: acceptEdits
 model: inherit
 ---
-Sen atölyenin bakımcısısın. **Başka hiçbir şey yapmadan önce `10-sistem/bakim/BAKIMCI.md` dosyasını Read aracıyla
+Sen atölyenin bakımcısısın. **Başka hiçbir şey yapmadan önce `20-sistem/bakim/BAKIMCI.md` dosyasını Read aracıyla
 baştan sona oku**; görev tanımın, yöntemin, yetki sınırın ve çıktı biçimin oradadır ve bu dosyanın yerine geçer.
 (Alt ajan gövdesinde `@dosya` içe aktarması belgelenmiş değildir; bu yüzden içe aktarma değil açık okuma kullanılır.)
 

@@ -1,0 +1,11 @@
+# Sürüm nabzı izleme listesi. Biçim: ad · tur(npm|pypi|github|eol) · kimlik · komut
+# komut kurulu sürümü okur (boş bırakılırsa "kurulu değil" sayılır). Boş ve # satırlar yok sayılır.
+# Üçüncü kolon: npm/pypi paket adı, github sahip/repo, eol ürün adı (endoflife.date).
+claude · npm · @anthropic-ai/claude-code · claude --version
+codex · npm · @openai/codex · codex --version
+opencode · github · anomalyco/opencode · opencode --version
+gh · github · cli/cli · gh --version
+uv · github · astral-sh/uv · uv --version
+node · eol · nodejs · node --version
+# Sabitlenmiş: yalnızca raporla, otomatik yükseltme önerme. Politika: en yeni sürüm en az 7 gün önce yayımlanmış olmalı.
+cc-safety-net · npm · cc-safety-net · cc-safety-net --version · sabit=2.6.12

@@ -1,4 +1,5 @@
 {
+  "agent": "kaan4kbulut",
   "autoMemoryEnabled": false,
   "attribution": {
     "commit": "",
@@ -22,20 +23,27 @@
       "Bash(head:*)",
       "Bash(tail:*)",
       "Bash(wc:*)",
-      "Bash(bash 10-sistem/denetim/denetle.sh:*)",
-      "Bash(bash 10-sistem/bakim/bakim.sh --raporla:*)",
-      "Bash(bash 10-sistem/bakim/guncelle.sh:*)",
-      "Bash(python3 .claude/hooks/*)"
+      "Bash(bash 20-sistem/denetim/denetle.sh:*)",
+      "Bash(bash 20-sistem/bakim/bakim.sh --raporla:*)",
+      "Bash(bash 20-sistem/bakim/guncelle.sh:*)",
+      "Bash(python3 .claude/hooks/*)",
+      "Bash(git mv:*)",
+      "Bash(mv:*)",
+      "Bash(mkdir:*)",
+      "Bash(git worktree:*)",
+      "Bash(git add:*)",
+      "Bash(git tag:*)",
+      "Bash(python3 20-sistem/*)",
+      "Bash(bash 20-sistem/*)",
+      "Bash(codex exec:*)",
+      "Bash(agy -p:*)",
+      "Bash(opencode run:*)"
     ],
     "ask": [
       "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git mv:*)",
       "Bash(rm:*)",
-      "Bash(mv:*)",
-      "Bash(sudo:*)",
-      "Bash(bash 10-sistem/kurulum/kur.sh:*)",
-      "Bash(bash 10-sistem/bakim/bakim.sh:*)"
+      "Bash(sudo:*)"
     ],
     "deny": [
       "Edit(./00-cekirdek/ANAYASA.md)",
@@ -47,7 +55,7 @@
       "Read(~/.config/gh/**)",
       "Read(./**/.env)",
       "Read(./**/.env.*)",
-      "Read(./10-sistem/durum/**/claude-config/**)",
+      "Read(./20-sistem/durum/**/claude-config/**)",
       "Bash(claude setup-token:*)",
       "Bash(git push --force:*)",
       "Bash(git push -f:*)",
@@ -123,5 +131,9 @@
         ]
       }
     ]
+  },
+  "statusLine": {
+    "type": "command",
+    "command": "python3 \"$CLAUDE_PROJECT_DIR/20-sistem/nabiz/durum-satiri.py\""
   }
 }

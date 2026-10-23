@@ -1,0 +1,23 @@
+# Entries allowed directly under the atölye root (ANAYASA 4.3). One per line.
+README.md
+CLAUDE.md
+AGENTS.md
+SURUM.md
+LICENSE
+.gitignore
+.gitattributes
+.mcp.json
+opencode.json
+.claude
+.codex
+00-cekirdek
+20-sistem
+30-programlar
+40-projeler
+60-hafiza
+70-kutuphane
+80-arsiv
+90-gelen-kutusu
+10-donanim
+50-arayuz
+.agents

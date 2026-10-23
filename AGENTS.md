@@ -1,24 +1,28 @@
 @00-cekirdek/AGENTS.md
 
-# Atölye: bu depoya özel kurallar
+# Atölye: ajan sınırları
 
-Ortak kurallar `00-cekirdek/AGENTS.md` dosyasındadır; önce onu oku ve uy. (Claude üstteki `@` satırıyla
-otomatik yükler; Codex, opencode ve agy için bu düz metin yönlendirmedir.)
+Önce `00-cekirdek/AGENTS.md` dosyasını oku ve uygula.
+Codex, opencode ve agy `@` içe aktarmasını genişletmez; dosyayı açıkça oku.
+Harita `README.md`, düzen kuralları `00-cekirdek/ANAYASA.md` içindedir.
+ANAYASA yalnızca insan tarafından düzenlenir.
 
-Bu depo kullanıcının **atölyesi**: beyni, araçları, çalışma masası. Hangi makineye taşınırsa taşınsın aynı
-şekilde çalışmalıdır. Harita `README.md`'de, düzen kuralları `00-cekirdek/ANAYASA.md`'de.
+## Bu kök çekirdek ajanın alanıdır
 
-1. **ANAYASA'ya uy.** `00-cekirdek/ANAYASA.md` yalnızca insan tarafından düzenlenir; sen düzenlemezsin, değişiklik
-   önerirsin. Adlandırma, derinlik ve "ne nereye gider" kuralları oradadır.
-2. **Ne nereye gider tablosuna bak** (`README.md`). Yeri kesin olmayan her şey `70-gelen-kutusu/`'na gider; asla köke,
-   asla rastgele bir bölüme.
-3. **Karar → `/karar`** becerisi ile `40-hafiza/kararlar/KARARLAR.md`'ye. Kararı sohbette bırakma.
-4. **Oturum biterken → `/kapat`** becerisi ile `40-hafiza/oturumlar/`'a devir notu. Başka makinede devam etmenin tek yolu budur.
-5. **Depo içinde symlink yok, `./betik` çağrısı yok.** Betikler `bash yol/betik.sh` ile çağrılır (USB/exFAT uyumu).
-   Mutlak yol yazma; `$CLAUDE_PROJECT_DIR` ya da betiğin kendi konumundan göreli çöz.
-6. **Taşı, silme.** Kaldırılan her şey `60-arsiv/YYYY-MM-DD-<ad>/` + `NEDEN.md`.
-7. **Yeni bölüm/araç açmadan önce ara:** `60-arsiv/`, `70-gelen-kutusu/`, `40-hafiza/`, `gh repo list`. Aynı işi yapan
-   ikinci şey açılmaz.
-8. **Düzen sorunu görürsen** `/bakim` ya da `bash 10-sistem/bakim/bakim.sh`; çözümü `10-sistem/bakim/bilinen-sorunlar.md`'ye yaz.
-9. Kimlik dosyalarını (`~/.claude/.credentials.json`, `~/.codex/auth.json`, `~/.gemini/`) okuma; giriş durumunu
-   yalnızca aracın kendi komutuyla sor.
+Codex, opencode, agy veya çekirdek ajan olarak çalışmayan sıradan bir Claude
+oturumuysan kökte ve `00-cekirdek/`, `10-donanim/`, `20-sistem/`, `60-hafiza/`
+içinde dosya oluşturma, düzenleme veya taşıma.
+Çalışmanı `40-projeler/<ad>/` içindeki kendi reposunda veya çağrıldığın çalışma
+klasöründe yap; çağrılma konumu yukarıdaki kök/çekirdek yasağını kaldırmaz.
+Salt okunur sorular, incelemeler ve dosya okumaları serbesttir.
+
+## Depo disiplini
+
+- Kararları ve oturum devirlerini ortak kurallardaki hafıza akışına kaydet.
+- Yeni dosyalar için Aşama B yerleşimini kullan: araç ayarları
+  `30-programlar/<arac>/genel/`, belirsiz içerik `90-gelen-kutusu/`.
+- Depo içinde symlink oluşturma; betikleri `bash yol/betik.sh` ile çağır.
+- Yolları depo konumundan göreli çöz; kaldırılanları gerekçesiyle arşive taşı.
+- Yeni araç açmadan önce mevcut kayıtları ve arşivi ara.
+- Kimlik dosyalarını okuma; giriş durumunu yalnız aracın kendi komutuyla sor.
+- Kullanıcı istemeden commit veya push yapma.

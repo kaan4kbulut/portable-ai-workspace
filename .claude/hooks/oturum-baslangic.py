@@ -2,10 +2,10 @@
 """SessionStart hook: inject workspace context (stdout goes into Claude's context). Never blocks.
 
 Prints, within ~80 lines:
-  1. first-run warning for this machine (10-sistem/durum/<host>/ missing)
-  2. the 2 newest handover notes from 40-hafiza/oturumlar/
-  3. head of 40-hafiza/kararlar/KARARLAR.md
-  4. DURUM.md of the active project (durum/<host>/aktif-proje.txt or first 'aktif' row in 30-projeler/DIZIN.md)
+  1. first-run warning for this machine (20-sistem/durum/<host>/ missing)
+  2. the 2 newest handover notes from 60-hafiza/oturumlar/
+  3. head of 60-hafiza/kararlar/KARARLAR.md
+  4. DURUM.md of the active project (durum/<host>/aktif-proje.txt or first 'aktif' row in 40-projeler/DIZIN.md)
   5. quick structure check summary (denetle.sh --hizli)
 """
 import glob
@@ -31,11 +31,11 @@ def main():
     host = socket.gethostname().split(".")[0]
     cikti = ["# Atölye oturum bağlamı"]
 
-    durum = os.path.join(kok, "10-sistem", "durum", host)
+    durum = os.path.join(kok, "20-sistem", "durum", host)
     if not os.path.isdir(durum):
-        cikti.append(f"- UYARI: bu makinede ({host}) ilk kurulum yapılmamış. Önce `bash basla.sh` çalıştır.")
+        cikti.append(f"- UYARI: bu makinede ({host}) ilk kurulum yapılmamış. Önce `/kur` çalıştır.")
 
-    notlar = sorted(glob.glob(os.path.join(kok, "40-hafiza", "oturumlar", "*", "*.md")))
+    notlar = sorted(glob.glob(os.path.join(kok, "60-hafiza", "oturumlar", "*", "*.md")))
     notlar = [n for n in notlar if os.path.basename(n) != "README.md"][-2:]
     if notlar:
         cikti.append("")
@@ -46,7 +46,7 @@ def main():
     else:
         cikti.append("- Henüz devir notu yok (oturum sonunda `/kapat`).")
 
-    kararlar = os.path.join(kok, "40-hafiza", "kararlar", "KARARLAR.md")
+    kararlar = os.path.join(kok, "60-hafiza", "kararlar", "KARARLAR.md")
     satirlar = oku(kararlar, 20)
     if satirlar:
         cikti.append("")
@@ -58,20 +58,20 @@ def main():
     if ap and ap[0].strip():
         proje = ap[0].strip()
     else:
-        for s in oku(os.path.join(kok, "30-projeler", "DIZIN.md"), 60):
+        for s in oku(os.path.join(kok, "40-projeler", "DIZIN.md"), 60):
             if "|" in s and re.search(r"\baktif\b", s) and not s.startswith("| ad"):
                 hucreler = [h.strip().strip("`") for h in s.strip("|").split("|")]
                 if hucreler and hucreler[0] and hucreler[0] != "ad":
                     proje = hucreler[0]
                     break
     if proje:
-        d = os.path.join(kok, "30-projeler", "aktif", proje, "DURUM.md")
+        d = os.path.join(kok, "40-projeler", "aktif", proje, "DURUM.md")
         ds = oku(d, 15)
         cikti.append("")
         cikti.append(f"## Aktif proje: {proje}")
         cikti.extend(ds if ds else [f"- {os.path.relpath(d, kok)} yok ya da proje klonlanmamış."])
 
-    denetle = os.path.join(kok, "10-sistem", "denetim", "denetle.sh")
+    denetle = os.path.join(kok, "20-sistem", "denetim", "denetle.sh")
     if os.path.isfile(denetle):
         try:
             r = subprocess.run(["bash", denetle, "--hizli"], capture_output=True, text=True, timeout=15, cwd=kok)

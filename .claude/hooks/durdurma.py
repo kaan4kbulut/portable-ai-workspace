@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Stop hook: once per session, remind to write a handover note with /kapat. Never blocks.
 
-10-sistem/durum/<host>/son-hatirlatma.txt holds the last 20 reminded session_ids (one file, bounded; concurrent sessions ok).
+20-sistem/durum/<host>/son-hatirlatma.txt holds the last 20 reminded session_ids (one file, bounded; concurrent sessions ok).
 Silent when stop_hook_active.
 """
 import json
@@ -20,7 +20,7 @@ def main():
     kok = os.environ.get("CLAUDE_PROJECT_DIR") or girdi.get("cwd") or os.getcwd()
     host = socket.gethostname().split(".")[0]
     sid = (girdi.get("session_id") or "bilinmiyor")[:36]
-    durum = os.path.join(kok, "10-sistem", "durum", host)
+    durum = os.path.join(kok, "20-sistem", "durum", host)
     isaret = os.path.join(durum, "son-hatirlatma.txt")
     try:
         with open(isaret, encoding="utf-8") as f:
@@ -36,7 +36,7 @@ def main():
     except OSError:
         sys.exit(0)
     print(json.dumps({
-        "systemMessage": "Atölye: oturumu bitirmeden önce `/kapat` ile devir notu yaz (40-hafiza/oturumlar/)."
+        "systemMessage": "Atölye: oturumu bitirmeden önce `/kapat` ile devir notu yaz (60-hafiza/oturumlar/)."
     }, ensure_ascii=False))
     sys.exit(0)
 

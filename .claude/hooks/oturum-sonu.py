@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-"""SessionEnd hook: record machine-local session summary to 10-sistem/durum/<host>/son-oturum.json.
+"""SessionEnd hook: record machine-local session summary to 20-sistem/durum/<host>/son-oturum.json.
 
-Raw material for /kapat and kapat.sh (touched files, cwd, timestamps). Never writes into tracked files.
+Raw material for /kapat (touched files, cwd, timestamps). Never writes into tracked files.
 """
 import json
 import os
@@ -26,7 +26,7 @@ def main():
         girdi = {}
     kok = os.environ.get("CLAUDE_PROJECT_DIR") or girdi.get("cwd") or os.getcwd()
     host = socket.gethostname().split(".")[0]
-    durum = os.path.join(kok, "10-sistem", "durum", host)
+    durum = os.path.join(kok, "20-sistem", "durum", host)
     try:
         os.makedirs(durum, exist_ok=True)
     except OSError:

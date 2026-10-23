@@ -13,34 +13,38 @@ Kurallar + hafıza + araç ayarları + projeler + arşiv tek yerde; her makinede
 ```bash
 git clone https://github.com/kaan4kbulut/portable-ai-workspace.git ~/atolye
 cd ~/atolye
-bash basla.sh            # ilk açılış: kurulum (eksik araçlar, git ayarı), denetim, pano, sonra claude
+claude                  # klasörde çekirdek ajanı açın
 ```
+`claude` içinde `/kur` çalıştırın: ajan adını klasör adından (`atolye`) önerir, onayınızla kurar.
+Pano ve menü `/<ad>` komutudur; ad `00-cekirdek/kimlik.json` içinde tutulur.
 Sonra her CLI'a **o makinede** kendi girişinizle girin (`claude` → `/login`, `codex login`, `opencode auth login`).
-Gün sonu: `bash kapat.sh`. Claude içinde: `/baslat`, `/kapat`, `/karar`, `/ayikla`, `/denetle`, `/bakim`.
+Gün başı `/baslat`, gün sonu `/kapat`. Diğer komutlar: `/karar`, `/ayikla`, `/denetle`, `/bakim`.
+Başka CLI için proje klasöründe ilgili CLI'ı açın veya `/araclar <arac> <görev>` kullanın.
 
 ## Yapı
 
-| Bölüm | Benzetme | İçerik |
-|---|---|---|
-| `00-cekirdek/` | kernel | `ANAYASA.md` (düzen kuralları, yalnız insan), `AGENTS.md` (ajan kuralları), `PLAN.md` |
-| `10-sistem/` | init + servisler | `kurulum/kur.sh`, `denetim/denetle.sh` (kurallar veri olarak), `bakim/` (gömülü bakım ajanı), `cihazlar/`, `ag/`, `servisler/`, `durum/` |
-| `20-araclar/` | programlar | her CLI'ın git'te duran ayarı, MCP tanımları, yerel modeller kaydı |
-| `30-projeler/` | kullanıcı alanı | her proje ayrı repo; `DIZIN.md` indeks; `sablon/` |
-| `40-hafiza/` | durum/kayıt | kararlar, oturum devir notları, öğrenilenler, tercihler, cihazlar |
-| `50-kutuphane/` | belgeler | araçlar, modeller, sağlayıcılar, teknoloji, bilgi |
-| `60-arsiv/` | — | emekliler, tarih önekli, `NEDEN.md` ile ("taşı, silme") |
-| `70-gelen-kutusu/` | kuyruk | sınıflanmamış her şey; haftalık ayıklama |
-| `80-sablonlar/` | — | belge, bölüm, beceri şablonları |
-| `90-dis-kaynaklar/` | mount | dış klonlar (git dışı) |
-| `.claude/` | — | kendi kendine yeten Claude Code kapsamı: ayarlar, kurallar, beceriler, ajanlar, hook'lar |
+| Katman | İçerik |
+|---|---|
+| `00-cekirdek/` | ANAYASA, AGENTS, PLAN, `sablonlar/` |
+| `10-donanim/` | makine sayfaları, profiller ve makineye özgü kurulum |
+| `20-sistem/` | kurulum, denetim, bakım, ağ, servisler, yayın; durum* ve günlük* |
+| `30-programlar/` | CLI ve uygulamalar, ayarlar, yerel modeller; dış klonlar* |
+| `40-projeler/` | DIZIN, şablon, aktif projeler* ve denemeler* |
+| `50-arayuz/` | komut kataloğu, pano, durum satırı, harita ve uzaktan erişim |
+| `60-hafiza/` | kararlar, devir notları, dersler, tercihler |
+| `70-kutuphane/` | bilgi belgeleri |
+| `80-arsiv/` | emekliler ve NEDEN.md |
+| `90-gelen-kutusu/` | sınıflanmamış öğeler; haftalık `/ayikla` |
+
+Kökteki `.claude/` araç kapsamı arayüz katmanına aittir.
 
 ## Neden böyle
 
-- **Kendi kendine yeten:** mutlak yol yok, symlink yok, `./betik` yok; klasörü taşıyın, `bash basla.sh` deyin.
-- **Kurallar veri:** denetim kuralları `10-sistem/denetim/kurallar/*.txt`; bakım ajanı yeni kural ekleyebilir.
+- **Kendi kendine yeten:** mutlak yol yok, symlink yok, `./betik` yok; klasörü taşıyın, içinde `claude` açıp yeni makinede `/kur` çalıştırın.
+- **Kurallar veri:** denetim kuralları `20-sistem/denetim/kurallar/*.txt`; bakım ajanı yeni kural ekleyebilir.
 - **Gömülü bakım ajanı:** `bakim.sh` denetim bulgularını CLI'a verir; onarır, öğrendiğini `bilinen-sorunlar.md`,
   `ogrenilenler/` ve `onarimlar/` içine yazar. Aynı sorun iki kez elle çözülmez.
-- **Hafıza araçta değil klasörde:** Claude auto-memory kapalı; süreklilik `40-hafiza/oturumlar/` devir notlarından.
+- **Hafıza araçta değil klasörde:** Claude auto-memory kapalı; süreklilik `60-hafiza/oturumlar/` devir notlarından.
 - **Yeniden yazma yasağı:** git geçmişi korunur, karar silinmez "geçersiz" işaretlenir, kaldırılan şey arşivde `NEDEN.md` ile durur.
 - **Güvenlik:** `yikici-koruma.py` (rm -r, reset --hard, force push, curl|sh, kimlik dosyası okuma engeli),
   ANAYASA yalnız insan, sır taraması pre-commit'te.
@@ -48,8 +52,8 @@ Gün sonu: `bash kapat.sh`. Claude içinde: `/baslat`, `/kapat`, `/karar`, `/ayi
 ## Uyarlama
 
 1. `00-cekirdek/ANAYASA.md` ve `AGENTS.md`'yi okuyun; dilinizi/kurallarınızı değiştirin (ANAYASA'yı elle).
-2. `10-sistem/cihazlar/ornek/` klasörünü makinenizin adıyla kopyalayın, `profil.md` içine `hostname:` yazın.
-3. Projelerinizi `30-projeler/aktif/<ad>/` altına klonlayın (`sablon/`'dan `CLAUDE.md`, `AGENTS.md`, `DURUM.md` alın), `DIZIN.md`'ye satır ekleyin.
+2. `10-donanim/ornek/` klasörünü makinenizin adıyla kopyalayın, `profil.md` içine `hostname:` yazın.
+3. Projelerinizi `40-projeler/aktif/<ad>/` altına klonlayın (`sablon/`'dan `CLAUDE.md`, `AGENTS.md`, `DURUM.md` alın), `DIZIN.md`'ye satır ekleyin.
 4. Kendi kararlarınızı `/karar`, oturum sonlarını `/kapat` ile yazın.
 
 ## English overview
@@ -57,12 +61,14 @@ Gün sonu: `bash kapat.sh`. Claude içinde: `/baslat`, `/kapat`, `/karar`, `/ayi
 | Dir | Role |
 |---|---|
 | `00-cekirdek` | kernel: constitution (human-only), shared agent rules, plan |
-| `10-sistem` | init/services: idempotent setup, structure checks (rules as data), embedded maintenance agent, device profiles |
-| `20-araclar` | per-tool config kept in git, MCP definitions, local model registry |
-| `30-projeler` | each project its own repo; index + template |
-| `40-hafiza` | decisions, session handover notes, lessons, preferences |
-| `50-kutuphane` · `60-arsiv` · `70-gelen-kutusu` · `80-sablonlar` · `90-dis-kaynaklar` | library · archive (move, never delete) · inbox · templates · external clones |
+| `20-sistem` | init/services: idempotent setup, structure checks (rules as data), embedded maintenance agent, device profiles |
+| `30-programlar` | per-tool config kept in git, MCP definitions, local model registry |
+| `40-projeler` | each project its own repo; index + template |
+| `60-hafiza` | decisions, session handover notes, lessons, preferences |
+| `70-kutuphane` · `80-arsiv` · `90-gelen-kutusu` · `00-cekirdek/sablonlar` · `30-programlar/dis-kaynaklar` | library · archive (move, never delete) · inbox · templates · external clones |
 
-Entry: `bash basla.sh` (first run installs missing user-local tools, never logs in). Requirements: bash, git, python3, curl, rsync.
+Entry: clone → open `claude` in the folder → `/kur` (agent name suggested from the folder name).
+Daily: `/baslat`, `/kapat`; dashboard: `/<ad>`. Requirements: Claude Code, bash, git, python3, curl, rsync.
+İç araçlar: `bash 20-sistem/kurulum/kur.sh`, `bash 20-sistem/denetim/denetle.sh`.
 
 Lisans: MIT.

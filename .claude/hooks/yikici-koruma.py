@@ -47,7 +47,7 @@ KK = (r"(?:^|[;&|(`\n{]|\$\()\s*(?:(?:xargs|env|exec|nohup|time|command|builtin|
 IC_KABUK = re.compile(r"\b(?:ba|z|da)?sh\s+(?:-[a-zA-Z]+\s+)*-[a-zA-Z]*c\s+(?:\"((?:[^\"\\]|\\.)*)\"|'([^']*)')")
 
 REDDET = [
-    (KK + r"rm\s+(?:\S+\s+)*?(-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)\b", "rm -r yasak; 60-arsiv/'e taşı (ANAYASA 6.4)"),
+    (KK + r"rm\s+(?:\S+\s+)*?(-[a-zA-Z]*[rR][a-zA-Z]*|--recursive)\b", "rm -r yasak; 80-arsiv/'e taşı (ANAYASA 6.4)"),
     (r"\bfind\b[^;&|]*\s(-delete\b|-exec(dir)?\s+rm\b)", "find -delete / -exec rm yasak; arşive taşı"),
     (r"\b(shutil\.rmtree|os\.remove|os\.unlink|os\.rmdir|fs\.rm(Sync)?\(|fs\.unlink)", "betikle silme yasak; arşive taşı"),
     (KK + r"git\s+(?:-[cC]\s+\S+\s+)*reset\s+--hard", "git reset --hard yasak"),
@@ -66,8 +66,8 @@ REDDET = [
 
 SOR = [
     (KK + r"sudo\b", "sudo sahibinin onayını ister"),
-    (KK + r"rm\s+(?!-)\S", "tek dosya silme onay ister; tercih: 60-arsiv/'e taşı"),
-    (KK + r"rm\s+-[a-zA-Z]*f[a-zA-Z]*\s", "rm -f onay ister; tercih: 60-arsiv/'e taşı"),
+    (KK + r"rm\s+(?!-)\S", "tek dosya silme onay ister; tercih: 80-arsiv/'e taşı"),
+    (KK + r"rm\s+-[a-zA-Z]*f[a-zA-Z]*\s", "rm -f onay ister; tercih: 80-arsiv/'e taşı"),
 ]
 
 KORUNAN = re.compile(r"ANAYASA\.md")
@@ -303,6 +303,9 @@ def yol_izinli(kok, hedef):
         return True, ""
     mutlak = os.path.realpath(hedef if os.path.isabs(hedef) else os.path.join(kok, hedef))
     if not kok_icinde(kok, mutlak):
+        # A relative project path must not escape into a sibling, even under /tmp.
+        if not os.path.isabs(hedef):
+            return False, f"proje kökü dışına yazma: {hedef}"
         if mutlak.startswith(GECICI):
             return True, ""
         return False, f"proje kökü dışına yazma: {hedef}"
@@ -352,9 +355,12 @@ def denetle(girdi):
     for kalip, neden in REDDET:
         if re.search(kalip, kural_metni, re.I | re.M):
             karar("deny", f"{neden} — komut: {kisa}")
-    if re.search(r"\b(python[\d.]*|node|perl|ruby|php|deno|bun)\b", komut) and KORUNAN.search(komut) \
-            and YORUMLAYICI_YAZAR.search(komut):
-        karar("deny", f"ANAYASA.md yorumlayıcıyla değiştirilmez (yalnız insan) — komut: {kisa}")
+    # interpreter heredocs (python3 - <<'EOF' ... EOF): only the code fed to the interpreter is checked, so a protected
+    # path mentioned elsewhere in the command (grep -e, a cat heredoc) is not a false positive
+    for m in re.finditer(r"\b(?:python[\d.]*|node|perl|ruby|php|deno|bun)\b[^\n]*<<-?\s*['\"]?(\w+)['\"]?[^\n]*\n(.*?)\n\s*\1\s*(?=\n|$)",
+                         komut, flags=re.S):
+        if KORUNAN.search(m.group(2)) and YORUMLAYICI_YAZAR.search(m.group(2)):
+            karar("deny", f"ANAYASA.md yorumlayıcıyla değiştirilmez (yalnız insan) — komut: {kisa}")
     parca_denetimi(kok, cwd, tarama)
     for kalip, neden in SOR:
         if re.search(kalip, kural_metni, re.I | re.M):

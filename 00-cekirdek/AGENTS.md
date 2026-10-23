@@ -17,15 +17,15 @@ AGENTS.md'si çelişen noktada önceliklidir; **Kesin kurallar** hiçbir yerde g
 - Önemli kararları seçenek + kanıt + öneri biçiminde sun; küçük seçimlerde makul varsayılanı seç ve söyle.
 
 ## Çalışma biçimi
-- Yeni bir şey yazmadan önce var olanı ara (`60-arsiv/`, `70-gelen-kutusu/`, `40-hafiza/`). Aynı işi yapan ikinci şey açılmaz.
+- Yeni bir şey yazmadan önce var olanı ara (`80-arsiv/`, `90-gelen-kutusu/`, `60-hafiza/`). Aynı işi yapan ikinci şey açılmaz.
 - Önce planla; en küçük çözümü uygula; ilgisiz kodu düzenleme; gereksiz bağımlılık ekleme.
 - Aynı yöntemle en fazla 2 deneme; sonra yaklaşımı değiştir ya da dur ve bildir.
 - Değişiklikten sonra testleri/denetimleri çalıştır; test zayıflatılmaz. Belgeler aynı değişiklikte güncellenir.
-- Taşınabilirlik: depo içinde symlink yok; betikler `bash yol/betik.sh`; mutlak yol yok; taşı, silme (`60-arsiv/`).
+- Taşınabilirlik: depo içinde symlink yok; betikler `bash yol/betik.sh`; mutlak yol yok; taşı, silme (`80-arsiv/`).
 
 ## Hafıza
-- Kalıcı bilgi atölyede durur: kararlar `40-hafiza/kararlar/KARARLAR.md`, devir notları `40-hafiza/oturumlar/`,
-  dersler `40-hafiza/ogrenilenler/`, makine sorunları `10-sistem/bakim/bilinen-sorunlar.md`.
+- Kalıcı bilgi atölyede durur: kararlar `60-hafiza/kararlar/KARARLAR.md`, devir notları `60-hafiza/oturumlar/`,
+  dersler `60-hafiza/ogrenilenler/`, makine sorunları `20-sistem/bakim/bilinen-sorunlar.md`.
 - Oturum biterken devir notu yazılır (Claude'da `/kapat`).
 
 ## Git

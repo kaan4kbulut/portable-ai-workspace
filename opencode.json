@@ -1,4 +1,16 @@
 {
   "$schema": "https://opencode.ai/config.json",
-  "instructions": ["00-cekirdek/AGENTS.md", "AGENTS.md"]
+  "instructions": [
+    "00-cekirdek/AGENTS.md",
+    "AGENTS.md"
+  ],
+  "permission": {
+    "edit": {
+      "*": "deny",
+      "40-projeler/**": "allow",
+      "90-gelen-kutusu/**": "allow"
+    },
+    "bash": "ask",
+    "shell": "ask"
+  }
 }

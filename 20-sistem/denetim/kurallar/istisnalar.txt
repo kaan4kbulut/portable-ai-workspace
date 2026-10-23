@@ -1,0 +1,20 @@
+# Paths exempt from naming/depth/README checks (tool-imposed names). Glob-ish, one per line.
+.claude
+.codex
+.git
+.gitignore
+.gitattributes
+.mcp.json
+opencode.json
+LICENSE
+mcp_config.json
+.gitkeep
+node_modules
+__pycache__
+30-programlar/dis-kaynaklar/*
+40-projeler/aktif/*
+40-projeler/deneme/*
+30-programlar/yerel-modeller/agirliklar/*
+20-sistem/durum/*
+20-sistem/gunluk/*
+.agents
