@@ -1,0 +1,6 @@
+# ornek
+hostname: (hostname -s çıktısı)
+rol: geliştirme
+donanim: ...
+os: ...
+notlar: bu klasörü makinenin adıyla kopyala; `hostname:` eşleşince kur.sh makineyi tanır.

@@ -1,0 +1,34 @@
+# --- Atölye: izlenmeyenler (bkz. 00-cekirdek/ANAYASA.md) ---
+
+# Projeler kendi repolarıdır; yalnızca indeks ve şablon izlenir
+30-projeler/aktif/*/
+30-projeler/deneme/*/
+
+# Dış klonlar: yalnızca README ve DIZIN izlenir
+90-dis-kaynaklar/*
+!90-dis-kaynaklar/README.md
+!90-dis-kaynaklar/DIZIN.md
+
+# Model ağırlıkları
+20-araclar/yerel-modeller/agirliklar/*
+!20-araclar/yerel-modeller/agirliklar/README.md
+
+# Makineye özgü durum ve günlükler
+10-sistem/durum/*
+!10-sistem/durum/README.md
+10-sistem/gunluk/*
+!10-sistem/gunluk/README.md
+
+# Yerel ayar ve sırlar
+**/settings.local.json
+**/CLAUDE.local.md
+**/.env
+**/.env.*
+*.yedek-*
+
+# Araç çöpleri
+node_modules/
+.venv/
+__pycache__/
+*.pyc
+.DS_Store

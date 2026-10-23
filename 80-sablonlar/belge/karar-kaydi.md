@@ -1,0 +1,1 @@
+- **{{karar}}.** {{gerekçe/kanıt}}. (Kaynak: {{kullanıcı|ölçüm|belge}})

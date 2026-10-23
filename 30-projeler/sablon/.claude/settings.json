@@ -1,0 +1,13 @@
+{
+  "autoMemoryEnabled": false,
+  "attribution": { "commit": false, "pr": false },
+  "permissions": {
+    "allow": ["Read(./**)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)"],
+    "ask": ["Bash(git commit:*)", "Bash(git push:*)", "Bash(rm:*)", "Bash(sudo:*)"],
+    "deny": [
+      "Read(./.env)", "Read(./.env.*)",
+      "Read(~/.claude/.credentials.json)", "Read(~/.codex/auth.json)", "Read(~/.gemini/**)",
+      "Bash(git push --force:*)", "Bash(git reset --hard:*)", "Bash(claude setup-token:*)"
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+# grep -E patterns that must never appear in tracked files. One per line.
+sk-[A-Za-z0-9]{20,}
+sk-ant-[A-Za-z0-9_-]{20,}
+ghp_[A-Za-z0-9]{30,}
+gho_[A-Za-z0-9]{30,}
+github_pat_[A-Za-z0-9_]{30,}
+AKIA[0-9A-Z]{16}
+AIza[0-9A-Za-z_-]{30,}
+xox[baprs]-[A-Za-z0-9-]{10,}
+-----BEGIN (RSA|OPENSSH|EC|DSA|PGP) PRIVATE KEY-----
+tskey-[a-z]+-[A-Za-z0-9]{10,}

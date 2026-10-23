@@ -1,0 +1,118 @@
+{
+  "autoMemoryEnabled": false,
+  "attribution": {
+    "commit": false,
+    "pr": false
+  },
+  "permissions": {
+    "allow": [
+      "Read(./**)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)",
+      "Bash(git ls-files:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(wc:*)",
+      "Bash(bash 10-sistem/denetim/denetle.sh:*)",
+      "Bash(bash 10-sistem/bakim/bakim.sh --raporla:*)",
+      "Bash(bash 10-sistem/bakim/guncelle.sh:*)",
+      "Bash(python3 .claude/hooks/*)"
+    ],
+    "ask": [
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git mv:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(sudo:*)",
+      "Bash(bash 10-sistem/kurulum/kur.sh:*)",
+      "Bash(bash 10-sistem/bakim/bakim.sh:*)"
+    ],
+    "deny": [
+      "Edit(./00-cekirdek/ANAYASA.md)",
+      "Write(./00-cekirdek/ANAYASA.md)",
+      "Read(~/.claude/.credentials.json)",
+      "Read(~/.codex/auth.json)",
+      "Read(~/.gemini/**)",
+      "Read(~/.ssh/**)",
+      "Read(~/.gnupg/**)",
+      "Read(~/.config/gh/**)",
+      "Read(./**/.env)",
+      "Read(./**/.env.*)",
+      "Read(./10-sistem/durum/**/claude-config/**)",
+      "Bash(claude setup-token:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(ln -s:*)",
+      "Bash(ln -sf:*)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/oturum-baslangic.py\"",
+            "timeout": 20
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/yikici-koruma.py\"",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/anayasa-koruma.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/durdurma.py\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/oturum-sonu.py\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}

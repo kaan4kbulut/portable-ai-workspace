@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# Pre-commit: structure check on staged files (blocks on errors). Installed via: git config core.hooksPath 10-sistem/denetim/git-hooks
+KOK=$(git rev-parse --show-toplevel)
+bash "$KOK/10-sistem/denetim/denetle.sh" --commit
+rc=$?
+if [ "$rc" -eq 2 ]; then
+  echo "commit engellendi: yukarıdaki [HATA] satırlarını düzelt (ya da bakimci: bash 10-sistem/bakim/bakim.sh)" >&2
+  exit 1
+fi
+exit 0

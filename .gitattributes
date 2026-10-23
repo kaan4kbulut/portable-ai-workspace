@@ -1,0 +1,17 @@
+# Satır sonları her makinede LF; exFAT/Windows'ta bile betikler bozulmaz
+* text=auto eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.service text eol=lf
+
+# İkili dosyalar
+*.png binary
+*.jpg binary
+*.gguf binary
+*.pdf binary
+*.tar.gz binary
+*.zip binary

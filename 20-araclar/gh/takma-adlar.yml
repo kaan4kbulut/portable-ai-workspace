@@ -1,0 +1,2 @@
+# gh aliases: gh alias import 20-araclar/gh/takma-adlar.yml  (repo list = authenticated user)
+repolar: repo list --limit 100 --json name,isPrivate,isArchived,pushedAt --template '{{range .}}{{.name}}{{"\t"}}{{if .isPrivate}}gizli{{else}}acik{{end}}{{"\t"}}{{if .isArchived}}arsiv{{else}}aktif{{end}}{{"\t"}}{{.pushedAt}}{{"\n"}}{{end}}'
