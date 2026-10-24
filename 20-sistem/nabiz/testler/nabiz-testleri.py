@@ -59,9 +59,31 @@ class KotaTestleri(unittest.TestCase):
         self.assertEqual(kota.kip_hesapla(f(0.5), h, None, SIMDI), "bilinmiyor")
         self.assertEqual(kota.kip_hesapla(f(0.5), h, SIMDI - 7 * 3600, SIMDI), "bilinmiyor")
 
-    def test_pencere_bitmek_uzere_bol(self):
+    def test_pencere_bitmek_uzere_esik_korunur(self):
         f = {"kullanilan": 0.8, "sifirlanma": SIMDI + 900}
-        self.assertEqual(kota.kip_hesapla(f, None, SIMDI, SIMDI), "bol")
+        self.assertEqual(kota.kip_hesapla(f, None, SIMDI, SIMDI), "idareli")
+
+    def test_iki_pencere_ve_baglayici(self):
+        f = {"kullanilan": 0.94, "sifirlanma": SIMDI + 900}
+        h = {"kullanilan": 0.42, "sifirlanma": SIMDI + 3 * 86400}
+        s = kota._sonuc("claude", f, h, SIMDI, "test", SIMDI)
+        self.assertEqual((s["kalan_yuzde"], s["baglayici"], s["kip"]), (6, "5s", "dolu"))
+        metin = kota._metin(s, SIMDI)
+        self.assertIn("5s %6 kalan (sıfırlanma ", metin)
+        self.assertIn(" · hafta %58 kalan (sıfırlanma ", metin)
+        self.assertEqual(kota.baglayici_bul(h, f, SIMDI), "hafta")
+        self.assertEqual(kota.baglayici_bul(f, f, SIMDI), "5s")
+        self.assertEqual(kota.baglayici_bul(None, h, SIMDI), "hafta")
+        self.assertIsNone(kota.baglayici_bul(None, None, SIMDI))
+        self.assertIsNone(kota._sonuc("claude", f, h, SIMDI - 7 * 3600, "test", SIMDI)["baglayici"])
+
+    def test_kip_esikleri_her_iki_pencerede(self):
+        for kullanilan, beklenen in ((0.90, "dolu"), (0.75, "idareli"), (0.749, "bol")):
+            w = {"kullanilan": kullanilan, "sifirlanma": SIMDI + 900}
+            for arac in ("claude", "codex", "agy"):
+                for f, h in ((w, None), (None, w)):
+                    with self.subTest(kullanilan=kullanilan, arac=arac, hafta=h is not None):
+                        self.assertEqual(kota.kip_hesapla(f, h, SIMDI, SIMDI, arac), beklenen)
 
     def test_sifirlanmis_pencere_sifirdan(self):
         f = {"kullanilan": 0.99, "sifirlanma": SIMDI - 10}
@@ -89,6 +111,10 @@ class KotaTestleri(unittest.TestCase):
         s = kota.codex_oku(time.time(), self.kok / "sessions")
         self.assertEqual(s["kalan_yuzde"], 70)
         self.assertIsNotNone(s["pencereler"]["hafta"])
+        self.assertEqual(s["baglayici"], "5s")
+        metin = kota._metin(s, SIMDI)
+        self.assertIn("5s %70 kalan", metin)
+        self.assertIn("hafta %90 kalan", metin)
 
     def test_codex_olay_zamani_kullanilir(self):
         gun = self.kok / "sessions" / "2026" / "10" / "23"
@@ -106,11 +132,14 @@ class KotaTestleri(unittest.TestCase):
 
     def test_agy_taklit(self):
         veri = {"command": {"data": {"groups": [{"name": "Gemini", "buckets": [
-            {"window": "5h", "remaining_fraction": 0.4, "reset_time": "2027-01-01T00:00:00Z"}]}]}}}
+            {"window": "5h", "remaining_fraction": 0.4, "reset_time": "2027-01-01T00:00:00Z"},
+            {"window": "weekly", "remaining_fraction": 0.6, "reset_time": "2027-01-04T00:00:00Z"}]}]}}}
         sim = datetime(2026, 12, 31, 22, tzinfo=timezone.utc).timestamp()
         with mock.patch.object(kota.shutil, "which", return_value="/x/agy"):
             s = kota.agy_oku(self.kok, sim, "h", calistir=lambda y: veri)
         self.assertEqual(s["kalan_yuzde"], 40)
+        self.assertEqual(s["baglayici"], "5s")
+        self.assertIn("hafta %60 kalan", kota._metin(s, sim))
         # ikinci çağrı önbellekten gelir, çalıştırıcı çağrılmaz
         s2 = kota.agy_oku(self.kok, sim + 5, "h", calistir=lambda y: self.fail("önbellek kullanılmalı"))
         self.assertEqual(s2["kalan_yuzde"], 40)
@@ -127,6 +156,12 @@ class KotaTestleri(unittest.TestCase):
 
 
 class DurumSatiriTestleri(unittest.TestCase):
+    def setUp(self):
+        # never spawn a real `kota.py --agy-yenile` (it would run the real agy)
+        yama = mock.patch.object(durum.subprocess, "Popen")
+        self.popen = yama.start()
+        self.addCleanup(yama.stop)
+
     def test_satir_ve_hiz(self):
         with tempfile.TemporaryDirectory() as t:
             kok = sahte_kok(Path(t) / "atolye")  # klasör adı = ad
@@ -140,9 +175,91 @@ class DurumSatiriTestleri(unittest.TestCase):
                 satir = durum.satir_uret(kok, kota, girdi, time.time(), "mk", kok / "yok")
                 gecen = time.perf_counter() - bas
             self.assertEqual(satir.split(" · ")[:5], ["atolye", "mk", "git ±3", "gelen 1", "denetim 1/2"])
-            self.assertIn("claude 80%", satir)
+            self.assertIn("claude 5s%80", satir)
             self.assertIn("codex ?", satir)
             self.assertLess(gecen, 0.2)
+
+    def test_baglayici_satir_bicimi(self):
+        with tempfile.TemporaryDirectory() as t:
+            kok = sahte_kok(Path(t))
+            f = {"kullanilan": 0.94, "sifirlanma": SIMDI + 3600}
+            h = {"kullanilan": 0.19, "sifirlanma": SIMDI + 6 * 86400}
+            codex = kota._sonuc("codex", None, h, SIMDI, "test", SIMDI)
+            claude = kota._sonuc("claude", f, h, SIMDI, "test", SIMDI)
+            with mock.patch.object(kota, "claude_oku", return_value=claude), mock.patch.object(
+                    kota, "codex_oku", return_value=codex), mock.patch.object(durum, "git_degisiklik", return_value="0"):
+                satir = durum.satir_uret(kok, kota, {}, SIMDI, "mk")
+            self.assertIn("claude 5s%6 hf%81 · codex hf%81 · agy ?", satir)
+
+    def test_baglam(self):
+        cw = {"context_window_size": 200000, "used_percentage": 23,
+              "current_usage": {"input_tokens": 1000, "cache_creation_input_tokens": 5000, "cache_read_input_tokens": 40000}}
+        self.assertEqual(durum.baglam({"context_window": cw}), "%23 46k/200k")
+        cw2 = {"context_window_size": 1_000_000, "current_usage": {"input_tokens": 250000}}
+        self.assertEqual(durum.baglam({"context_window": cw2}), "%25 250k/1.0M")
+        self.assertEqual(durum.baglam({}), "?")
+        self.assertEqual(durum.baglam({"context_window": {"context_window_size": 200000, "current_usage": None}}), "?")
+
+    def test_agy_onbellekten_okunur_calistirilmaz(self):
+        with tempfile.TemporaryDirectory() as t:
+            kok = sahte_kok(Path(t))
+            d = kok / "20-sistem" / "durum" / "mk"
+            d.mkdir(parents=True)
+            veri = {"groups": [{"buckets": [
+                {"window": "5h", "remaining_fraction": 0.9, "reset_time": "2099-01-01T00:00:00Z"},
+                {"window": "7d", "remaining_fraction": 0.4, "reset_time": "2099-01-02T00:00:00Z"}]}]}
+            (d / "kota-agy.json").write_text(json.dumps({"zaman": SIMDI - 1000, "veri": veri}))
+            calistir = mock.Mock()
+            r = kota.agy_oku(kok, SIMDI, "mk", calistir=calistir, yenile=False)
+            calistir.assert_not_called()
+            self.assertEqual(durum.kota_parcasi(r, SIMDI, kota), "agy 5s%90 hf%40")
+            self.assertEqual(kota.agy_oku(Path(t) / "bos", SIMDI, "mk", calistir=calistir, yenile=False)["kalan_yuzde"], None)
+
+    def test_bozuk_agy_onbellegi_satiri_bozmaz(self):
+        with tempfile.TemporaryDirectory() as t:
+            kok = sahte_kok(Path(t))
+            d = kok / "20-sistem" / "durum" / "mk"
+            d.mkdir(parents=True)
+            for veri in ([], {"groups": [None]}, {"groups": [{"buckets": [None, {"remaining_fraction": "x"}]}]}, {"groups": 5}):
+                (d / "kota-agy.json").write_text(json.dumps({"zaman": SIMDI, "veri": veri}))
+                r = kota.agy_oku(kok, SIMDI, "mk", calistir=mock.Mock(), yenile=False)
+                self.assertIsNone(r["kalan_yuzde"], veri)
+                with mock.patch.object(durum, "git_degisiklik", return_value="0"):
+                    self.assertIn("agy ?", durum.satir_uret(kok, kota, {}, SIMDI, "mk", kok / "yok"))
+
+    def test_agy_zaman_asiminda_grup_oldurulur(self):
+        sahte = mock.Mock(pid=4242)
+        sahte.communicate.side_effect = [subprocess.TimeoutExpired("agy", 20), ("", "")]
+        with mock.patch.object(kota.subprocess, "Popen", return_value=sahte) as po, mock.patch.object(kota.os, "killpg") as kp:
+            self.assertIsNone(kota._agy_calistir("/x/agy"))
+        kp.assert_called_once_with(4242, kota.signal.SIGKILL)
+        self.assertTrue(po.call_args[1]["start_new_session"])
+
+    def test_agy_gruplari_ayri_okunur(self):
+        with tempfile.TemporaryDirectory() as t:
+            kok = sahte_kok(Path(t))
+            d = kok / "20-sistem" / "durum" / "mk"
+            d.mkdir(parents=True)
+            kova = lambda w, f: {"window": w, "remaining_fraction": f, "reset_time": "2099-01-01T00:00:00Z"}
+            veri = {"groups": [{"name": "Gemini Models", "buckets": [kova("5h", 1.0), kova("weekly", 0.94)]},
+                               {"name": "Claude and GPT models", "buckets": [kova("5h", 0.8), kova("weekly", 0.46)]}]}
+            (d / "kota-agy.json").write_text(json.dumps({"zaman": SIMDI, "veri": veri}))
+            g = kota.agy_oku(kok, SIMDI, "mk", yenile=False)
+            c = kota.agy_oku(kok, SIMDI, "mk", yenile=False, grup="claude")
+            self.assertEqual((g["arac"], g["kalan_yuzde"]), ("agy", 94))
+            self.assertEqual((c["arac"], c["kalan_yuzde"]), ("agy-claude", 46))
+            self.assertEqual(durum.kota_parcasi(c, SIMDI, kota), "agy-claude 5s%80 hf%46")
+
+    def test_agy_tazele_eskide_bir_kez(self):
+        with tempfile.TemporaryDirectory() as t:
+            d = Path(t)
+            (d / "kota-agy.json").write_text(json.dumps({"zaman": time.time() - 10, "veri": {}}))
+            self.assertFalse(durum.agy_tazele(kota, d, time.time()))   # taze önbellek
+            (d / "kota-agy.json").write_text(json.dumps({"zaman": time.time() - 1000, "veri": {}}))
+            self.assertTrue(durum.agy_tazele(kota, d, time.time()))
+            self.assertFalse(durum.agy_tazele(kota, d, time.time()))   # damga: tekrar başlatılmaz
+            self.assertEqual(self.popen.call_count, 1)
+            self.assertIsInstance(self.popen.call_args[0][0], list)
 
     def test_kimlik_json_adi(self):
         with tempfile.TemporaryDirectory() as t:

@@ -221,14 +221,16 @@ def on_madde_oku(metin: str):
 
 
 def _gezin(klasor: Path):
-    """Yield *.md files below klasor, skipping ignored folders."""
+    """Yield *.md files below klasor, skipping ignored folders and nested repos."""
     if not klasor.is_dir():
         return
     for ad in sorted(os.listdir(klasor)):
         yol = klasor / ad
         if yol.is_dir():
-            if ad not in YOK_SAYILAN and not ad.startswith("."):
-                yield from _gezin(yol)
+            # a child holding .git is another repo (e.g. 40-projeler/aktif/<ad>); .git may be a file in worktrees
+            if ad in YOK_SAYILAN or ad.startswith(".") or (yol / ".git").exists():
+                continue
+            yield from _gezin(yol)
         elif ad.endswith(".md"):
             yield yol
 
@@ -330,7 +332,7 @@ def denetle(kok=None, bugun=None, yaz=True) -> dict:
             if _yerel_mi(hedef) and not _bag_coz(yol, hedef).exists():
                 ekle("kirik_baglanti", f"{goreli} → {hedef}", "Göreli bağlantının hedefi yok.", 3, "duzelt",
                      "kutuphane", [goreli])
-        if yol.name == "DIZIN.md":
+        if yol.name in ("DIZIN.md", "README.md"):  # index pages, not reports
             continue
         if yol.resolve() not in dizinli:
             ekle("dizinsiz_rapor", goreli, "Rapor DIZIN.md içinde bağlı değil.", 4, "duzelt", "kutuphane", [goreli])

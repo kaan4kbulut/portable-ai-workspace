@@ -136,7 +136,8 @@ if [ "$GENEL" = 1 ] || [ -n "$YENIDEN" ]; then
   # Claude: CLAUDE.md must be a real file with the absolute import path filled in
   if [ -f "$KOK/$claude_sablon" ]; then
     tmp=$(mktemp); sed "s#__ATOLYE__#$KOK#g" "$KOK/$claude_sablon" > "$tmp"
-    if [ "$KURU" = 1 ]; then log "  [kuru] ~/.claude/CLAUDE.md (kopya, yol dolduruldu)"; else yedekle_ve_bagla "$tmp" "$HOME/.claude/CLAUDE.md" --kopya; fi
+    if [ "$KURU" = 1 ]; then log "  [kuru] ~/.claude/CLAUDE.md (kopya, yol dolduruldu)"
+    elif [ -z "$YENIDEN" ] || [ "$YENIDEN" = "$HOME/.claude/CLAUDE.md" ]; then yedekle_ve_bagla "$tmp" "$HOME/.claude/CLAUDE.md" --kopya; fi
     rm -f "$tmp"
   fi
   bagla "$claude_ayar" "$HOME/.claude/settings.json"
@@ -155,6 +156,14 @@ if [ "$GENEL" = 1 ] || [ -n "$YENIDEN" ]; then
   bagla "$opencode_ayar" "$HOME/.config/opencode/opencode.json"
   bagla 00-cekirdek/AGENTS.md "$HOME/.gemini/AGENTS.md"
   bagla "$agy_mcp" "$HOME/.gemini/config/mcp_config.json"
+  bagla "$(genel_kaynak agy settings.json)" "$HOME/.gemini/antigravity-cli/settings.json"
+  bagla "$(genel_kaynak codex worker.config.toml)" "$HOME/.codex/worker.config.toml"
+  for u in "$KOK"/20-sistem/servisler/*.service.sablon; do  # units that need the atölye path filled in
+    [ -f "$u" ] || continue; ad=$(basename "$u" .sablon); tmp=$(mktemp); sed "s#__ATOLYE__#$KOK#g" "$u" > "$tmp"
+    if [ "$KURU" = 1 ]; then log "  [kuru] ~/.config/systemd/user/$ad (kopya, yol dolduruldu)"
+    else [ -n "$YENIDEN" ] && [ "$HOME/.config/systemd/user/$ad" != "$YENIDEN" ] || yedekle_ve_bagla "$tmp" "$HOME/.config/systemd/user/$ad" --kopya; fi
+    rm -f "$tmp"
+  done
   for u in "$KOK"/20-sistem/servisler/*.service; do
     [ -f "$u" ] || continue; bagla "20-sistem/servisler/$(basename "$u")" "$HOME/.config/systemd/user/$(basename "$u")"
   done

@@ -31,7 +31,8 @@ Kurulu olmayanı "yok" yaz; kurulum yeri `30-programlar/<arac>/` ya da `20-siste
    `claude` = Anthropic, `agy` varsayılanı = Google, `opencode` = `-m` önekindeki sağlayıcı). Aynı sağlayıcıysa **reddet**, farklısını öner.
 3. Kota: codex kıt; basit işi (özet, sınıflandırma, commit mesajı, kod arama) ona verme, önce yerel model/opencode öner.
 4. Komutlar (liste argümanlarıyla; kullanıcı girdisini kabuk dizgesine gömme):
-   - codex: `codex exec -C <dir> -s read-only|workspace-write -o <cikti-dosyasi> "<istem>"`; inceleme için `read-only`.
+   - codex: `codex exec -C <dir> -s read-only|workspace-write -o <cikti-dosyasi> "<istem>" < /dev/null`; inceleme için `read-only`.
+     **`< /dev/null` zorunlu:** stdin açık kalırsa Codex ek girdi bekleyip asılı kalır. Başlattıktan birkaç dakika sonra günlüğün büyüdüğünü doğrula.
    - opencode: hedef klasöre `cd` edip `opencode run -m <saglayici/model> "<istem>"` (`--dir` bayrağı yok, klasör çalışma dizinidir).
    - agy: hedef klasörde `agy -p "<istem>" --model <m> --output-format stream-json --dangerously-skip-permissions --sandbox`;
      sonuç, `event:"result"` satırındaki `result.response` alanıdır.

@@ -1,0 +1,4 @@
+{
+  "README.md": "# Görev dosyaları\n\n## Girer\nBu görevin başlangıç dosyaları; özgün dosya adları korunur.\n\n## Girmez\nDeğerlendirici, beklenen sonuç listesi ve model oturumları.\n",
+  "degisiklik.diff": "--- a/orders.py\n+++ b/orders.py\n@@ -1,8 +1,10 @@\n def load_settings(text):\n-    return json.loads(text)\n+    return eval(text)\n \n def total_orders(orders):\n     total = 0\n     for order in orders:\n         if order[\"paid\"]:\n-            total += order[\"amount\"]\n-    return total\n+            total += int(order[\"amount\"])\n+        if total > 0:\n+            return total\n"
+}

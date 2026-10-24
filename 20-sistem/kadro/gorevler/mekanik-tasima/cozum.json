@@ -1,0 +1,7 @@
+{
+  "README.md": "# Yerel araç\n\n## Girer\nAyar ve yerel belgeler; adlar kebab-case kullanır.\n\n## Girmez\nKimlik bilgileri ve model oturumları.\n\n## Kullanım\n[Kılavuz](belgeler/kilavuz.md)\n",
+  "ayar.json": "{\n  \"help\": \"belgeler/kilavuz.md\"\n}\n",
+  "belgeler/README.md": "# Belgeler\n\n## Girer\nGöreve ait kılavuz; dosyalar kebab-case adlandırılır.\n\n## Girmez\nModel oturumları ve değerlendirme çıktıları.\n",
+  "belgeler/kilavuz.md": "# Kılavuz\n\nDosyalar yeni belge klasörüne taşındı. Bu içeriği koru.\n",
+  "kontrol-listesi.md": "# Kontrol listesi\n\n- `ayar.json` tam olarak `{\"help\": \"belgeler/kilavuz.md\"}` nesnesini içerir.\n- Kök README içindeki tek Markdown bağı `belgeler/kilavuz.md` hedefine gider.\n- `belgeler/kilavuz.md` ve `belgeler/README.md` içerikleri değişmez.\n- Kılavuz ve bütün bağ hedefleri mevcut, normal dosyalardır.\n\nBaşarı bütün maddelerin geçmesi, yani 0 hatadır.\n"
+}

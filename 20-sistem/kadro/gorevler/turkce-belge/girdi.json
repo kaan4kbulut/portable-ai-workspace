@@ -1,0 +1,4 @@
+{
+  "README.md": "# Görev dosyaları\n\n## Girer\nBu görevin başlangıç dosyaları; özgün dosya adları korunur.\n\n## Girmez\nDeğerlendirici, beklenen sonuç listesi ve model oturumları.\n",
+  "sema.md": "# README şeması\n\nBirinci satır `# Not düzenleyici` olmalı. İkinci düzey başlıklar: `Amaç`, `Kullanım`, `Girer`, `Girmez`, `Adlandırma`. Her bölüm boş olmayan açıklama içerir.\n\nAraç: `python3 duzenle.py notlar`, yalnız yerel Markdown notlarının adlarını raporlar; dosya değiştirmez. Girdi: kebab-case adlı `.md` notları. Girdi olmayan: kimlik bilgileri, görseller, indirilen arşivler. Bağımlılık: Python 3 standart kütüphanesi. Araç kodu bu belgede sağlanmaz; verilen davranışı belgele, çalıştırmayı deneme.\n"
+}

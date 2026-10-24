@@ -1,22 +1,27 @@
 #!/usr/bin/env python3
 """Abonelik kotası okuyucusu: claude, codex, agy için kalan kota tahmini + kip.
 
-Kullanım: python3 20-sistem/nabiz/kota.py [--json]
+Kullanım: python3 20-sistem/nabiz/kota.py [--json | --agy-yenile]
+  --agy-yenile  yalnız agy önbelleğini tazeler, çıktı basmaz (durum-satiri.py arka planda çağırır)
 
 Kaynaklar (yalnızca resmi çıktılar; giriş/anahtar dosyaları okunmaz):
   claude  durum-satiri.py'nin yazdığı 20-sistem/durum/<host>/kota-claude.json
           (Claude Code'un statusLine'a verdiği rate_limits alanı)
   codex   ~/.codex/sessions/**/rollout-*.jsonl içindeki son `rate_limits` kaydı
-  agy     `agy -p /quota --output-format json` (model çağırmaz); 5 dk önbellek
+  agy     `agy -p /quota --output-format json` (model çağırmaz); 5 dk önbellek. İki grup ayrı satır:
+          agy (Gemini) ve agy-claude (agy içindeki Claude Opus/Sonnet + GPT-OSS; Claude Max'ten ayrı kota)
   opencode  kota API'si yok: n/a
 
-Kip: bol / normal / idareli / dolu / bilinmiyor (model-motoru quota.py mantığı).
+Kip: bağlayıcı (en az kalan) pencere <= %10 ise dolu, <= %25 ise idareli.
+Daha fazla kalanda mevcut tempo hesabı bol / normal / idareli seçer.
+Sıfırlanmış pencereler %100 kalan sayılır; eski verinin kipi bilinmiyor olur.
 """
 from __future__ import annotations
 
 import json
 import os
 import shutil
+import signal
 import socket
 import subprocess
 import sys
@@ -31,7 +36,7 @@ BOL_ESIK = 0.20         # ayrılan payın bu kadar üstünde yer varsa bol
 ESKI_S = 6 * 3600       # bundan eski veri => bilinmiyor
 AGY_ONBELLEK_S = 300
 AGY_ZAMAN_ASIMI_S = 20
-ARACLAR = ("claude", "codex", "agy", "opencode")
+ARACLAR = ("claude", "codex", "agy", "agy-claude", "opencode")
 
 
 # --- kök / makine ------------------------------------------------------------------
@@ -75,8 +80,11 @@ def kip_hesapla(five: dict | None, week: dict | None, zaman: float | None,
     if zaman is None or simdi - zaman > ESKI_S or (five is None and week is None):
         return "bilinmiyor"
     f, h = _kullanilan(five, simdi), _kullanilan(week, simdi)
-    if (f is not None and f >= 0.98) or (h is not None and h >= 0.98):
+    en_cok = max(x for x in (f, h) if x is not None)
+    if en_cok >= 0.90:
         return "dolu"
+    if en_cok >= 0.75:
+        return "idareli"
     kalan_s = (five["sifirlanma"] - simdi) if five and five["sifirlanma"] > simdi else None
     pay = 0.0 if (kalan_s is not None and kalan_s <= 1800) else AYRILAN
     onde = 0.0
@@ -101,6 +109,12 @@ def kalan_yuzde(five: dict | None, week: dict | None, simdi: float) -> int | Non
     return None if not kul else round((1 - max(kul)) * 100)
 
 
+def baglayici_bul(five: dict | None, week: dict | None, simdi: float) -> str | None:
+    """En az kalan pencere; eşitlikte 5 saatlik pencere seçilir."""
+    pencereler = [(ad, _kullanilan(w, simdi)) for ad, w in (("5s", five), ("hafta", week)) if w]
+    return max(pencereler, key=lambda p: p[1])[0] if pencereler else None
+
+
 def _pencere(kullanilan_yuzde, sifirlanma) -> dict | None:
     if not isinstance(kullanilan_yuzde, (int, float)) or isinstance(kullanilan_yuzde, bool):
         return None
@@ -113,6 +127,7 @@ def _sonuc(arac: str, five: dict | None, week: dict | None, zaman: float | None,
            kaynak: str, simdi: float, not_: str = "") -> dict:
     return {
         "arac": arac,
+        "baglayici": baglayici_bul(five, week, simdi) if zaman is not None and simdi - zaman <= ESKI_S else None,
         "kalan_yuzde": kalan_yuzde(five, week, simdi) if (zaman and simdi - zaman <= ESKI_S) else None,
         "kip": kip_hesapla(five, week, zaman, simdi, arac),
         "pencereler": {"5s": five, "hafta": week},
@@ -123,7 +138,7 @@ def _sonuc(arac: str, five: dict | None, week: dict | None, zaman: float | None,
 
 
 def _bilinmiyor(arac: str, kaynak: str, not_: str) -> dict:
-    return {"arac": arac, "kalan_yuzde": None, "kip": "bilinmiyor", "pencereler": {"5s": None, "hafta": None},
+    return {"arac": arac, "baglayici": None, "kalan_yuzde": None, "kip": "bilinmiyor", "pencereler": {"5s": None, "hafta": None},
             "kaynak": kaynak, "zaman": None, "not": not_}
 
 
@@ -241,32 +256,55 @@ def codex_oku(simdi: float, oturumlar: Path | None = None) -> dict:
 
 # --- agy ---------------------------------------------------------------------------
 def _agy_calistir(yol: str) -> dict | None:
+    """Own process group: on timeout the whole tree is killed so held pipes cannot hang us."""
     try:
-        p = subprocess.run([yol, "-p", "/quota", "--output-format", "json"], capture_output=True, text=True,
-                           timeout=AGY_ZAMAN_ASIMI_S, check=False, cwd=os.path.expanduser("~"))
-        return json.loads(p.stdout[p.stdout.index("{"):])
-    except (OSError, ValueError, subprocess.SubprocessError):
+        p = subprocess.Popen([yol, "-p", "/quota", "--output-format", "json"], stdin=subprocess.DEVNULL,
+                             stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True,
+                             cwd=os.path.expanduser("~"), start_new_session=True)
+    except OSError:
+        return None
+    try:
+        cikti, _ = p.communicate(timeout=AGY_ZAMAN_ASIMI_S)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(p.pid, signal.SIGKILL)
+        except OSError:
+            pass
+        p.communicate()
+        return None
+    try:
+        return json.loads(cikti[cikti.index("{"):])
+    except ValueError:
         return None
 
 
-def agy_oku(kok: Path, simdi: float, host: str | None = None, calistir=_agy_calistir) -> dict:
+AGY_GRUPLARI = {"gemini": ("agy", ("gemini",)), "claude": ("agy-claude", ("claude", "gpt"))}
+
+
+def agy_oku(kok: Path, simdi: float, host: str | None = None, calistir=_agy_calistir,
+            yenile: bool = True, grup: str = "gemini") -> dict:
+    """yenile=False: agy çalıştırılmaz, önbellek yaşı ne olursa olsun kullanılır (statusLine için).
+    grup: agy has separate quota groups; "gemini" (row "agy") or "claude" (Claude + GPT models, row "agy-claude")."""
+    arac, anahtarlar = AGY_GRUPLARI[grup]
     kaynak = "agy -p /quota --output-format json"
     onbellek = durum_klasoru(kok, host) / "kota-agy.json"
     veri, zaman = None, None
     try:
         d = json.loads(onbellek.read_text(encoding="utf-8"))
-        if simdi - float(d["zaman"]) <= AGY_ONBELLEK_S:
+        if isinstance(d.get("veri"), dict) and (not yenile or simdi - float(d["zaman"]) <= AGY_ONBELLEK_S):
             veri, zaman = d["veri"], float(d["zaman"])
     except (OSError, ValueError, KeyError, TypeError):
         pass
+    if veri is None and not yenile:
+        return _bilinmiyor(arac, kaynak, "agy önbelleği yok")
     if veri is None:
         yol = shutil.which("agy") or ""
         if not yol:
-            return _bilinmiyor("agy", kaynak, "agy kurulu değil")
+            return _bilinmiyor(arac, kaynak, "agy kurulu değil")
         ham = calistir(yol)
         veri = ((ham or {}).get("command") or {}).get("data") if isinstance(ham, dict) else None
         if not isinstance(veri, dict):
-            return _bilinmiyor("agy", kaynak, "agy /quota yanıt vermedi (giriş yapılmamış olabilir; giriş agy'nin kendi komutuyla)")
+            return _bilinmiyor(arac, kaynak, "agy /quota yanıt vermedi (giriş yapılmamış olabilir; giriş agy'nin kendi komutuyla)")
         zaman = simdi
         try:
             _atomik_yaz(onbellek, json.dumps({"zaman": zaman, "veri": veri}, ensure_ascii=False))
@@ -274,19 +312,29 @@ def agy_oku(kok: Path, simdi: float, host: str | None = None, calistir=_agy_cali
             pass
     # Gruplar arasında pencere başına en kısıtlı olan alınır.
     en_kotu: dict[str, dict] = {}
-    for g in veri.get("groups") or []:
-        for b in g.get("buckets") or []:
+    gruplar = veri.get("groups")
+    gruplar = [g for g in gruplar if isinstance(g, dict)] if isinstance(gruplar, list) else []
+    adli = [g for g in gruplar if isinstance(g.get("name"), str)]
+    if adli:  # named groups: keep only this group's buckets (min across groups hid the free Gemini quota)
+        gruplar = [g for g in adli if any(k in g["name"].lower() for k in anahtarlar)]
+    for g in gruplar:
+        kovalar = g.get("buckets") if isinstance(g, dict) else None
+        for b in kovalar if isinstance(kovalar, list) else []:
+            if not isinstance(b, dict):
+                continue
             frac, anahtar = b.get("remaining_fraction"), ("5s" if b.get("window") == "5h" else "hafta")
             try:
                 sifir = datetime.fromisoformat(b["reset_time"].replace("Z", "+00:00")).timestamp()
             except (KeyError, ValueError, AttributeError):
                 continue
-            pen = _pencere(None if frac is None else (1 - frac) * 100, sifir)
+            if not isinstance(frac, (int, float)) or isinstance(frac, bool):
+                continue
+            pen = _pencere((1 - frac) * 100, sifir)
             if pen and (anahtar not in en_kotu or pen["kullanilan"] > en_kotu[anahtar]["kullanilan"]):
                 en_kotu[anahtar] = pen
     if not en_kotu:
-        return _bilinmiyor("agy", kaynak, "agy kota verisi boş")
-    return _sonuc("agy", en_kotu.get("5s"), en_kotu.get("hafta"), zaman, kaynak, simdi)
+        return _bilinmiyor(arac, kaynak, f"agy kota verisi boş ({grup} grubu)")
+    return _sonuc(arac, en_kotu.get("5s"), en_kotu.get("hafta"), zaman, kaynak, simdi)
 
 
 # --- toplu -------------------------------------------------------------------------
@@ -295,13 +343,26 @@ def hepsi(kok: Path, simdi: float | None = None, host: str | None = None, agy: b
     sonuc = [claude_oku(kok, simdi, host), codex_oku(simdi)]
     if agy:
         sonuc.append(agy_oku(kok, simdi, host))
+        sonuc.append(agy_oku(kok, simdi, host, yenile=False, grup="claude"))  # same cache, second group
     sonuc.append(_bilinmiyor("opencode", "yok", "n/a: kota bilgisi sağlanmıyor"))
     sonuc[-1]["kip"] = "n/a"
     return sonuc
 
 
-def _metin(s: dict) -> str:
-    kalan = "bilinmiyor" if s["kalan_yuzde"] is None else f"%{s['kalan_yuzde']} kalan"
+def _metin(s: dict, simdi: float | None = None) -> str:
+    simdi = time.time() if simdi is None else simdi
+    parcalar = []
+    if s["kalan_yuzde"] is not None:
+        for ad, w in s["pencereler"].items():
+            if w is None:
+                continue
+            sifir = datetime.fromtimestamp(w["sifirlanma"]).astimezone()
+            saat = sifir.strftime("%H:%M")
+            if ad == "hafta":
+                saat = ("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")[sifir.weekday()] + " " + saat
+            kalan = kalan_yuzde(w, None, simdi)
+            parcalar.append(f"{ad} %{kalan} kalan (sıfırlanma {saat})")
+    kalan = " · ".join(parcalar) or "bilinmiyor"
     satir = f"{s['arac']:<9} {kalan:<14} kip={s['kip']:<10} kaynak={s['kaynak']}"
     if s["zaman"]:
         satir += f" · {s['zaman']}"
@@ -312,6 +373,9 @@ def _metin(s: dict) -> str:
 
 def main(argv: list[str]) -> int:
     kok = kok_bul()
+    if "--agy-yenile" in argv:
+        agy_oku(kok, time.time())
+        return 0
     sonuc = hepsi(kok)
     if "--json" in argv:
         print(json.dumps(sonuc, ensure_ascii=False, indent=2))

@@ -1,0 +1,4 @@
+{
+  "README.md": "# Görev dosyaları\n\n## Girer\nBu görevin referans çözümü; özgün dosya adları korunur.\n\n## Girmez\nDeğerlendirici, beklenen sonuç listesi ve model oturumları.\n",
+  "bulgular.json": "{\n  \"bulgular\": [\n    {\n      \"satir\": 2,\n      \"aciklama\": \"eval güvenilmeyen ayarı kod olarak çalıştırır.\"\n    },\n    {\n      \"satir\": 8,\n      \"aciklama\": \"int dönüşümü ondalık kuruş kısmını kaybettirir.\"\n    },\n    {\n      \"satir\": 10,\n      \"aciklama\": \"Döngü içinde return erken dönüş yapar; sonraki siparişler toplanmaz.\"\n    }\n  ]\n}\n"
+}

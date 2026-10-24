@@ -1,0 +1,48 @@
+{
+  "surum": 1,
+  "inceleme_saglayici_farkli": true,
+  "saglayicilar": {
+    "claude": "anthropic",
+    "codex": "openai",
+    "agy": "google",
+    "yerel": "local"
+  },
+  "zor_isler": ["kod-duzeltme", "inceleme", "arastirma"],
+  "is_turu": {
+    "kod-duzeltme": [
+      {"cli": "codex", "model": "varsayilan", "efor": "high"},
+      {"cli": "agy", "model": "varsayilan", "efor": "high"}
+    ],
+    "inceleme": [
+      {"cli": "agy", "model": "varsayilan", "efor": "high"},
+      {"cli": "codex", "model": "varsayilan", "efor": "high"}
+    ],
+    "turkce-belge": [
+      {"cli": "agy", "model": "varsayilan", "efor": "medium"},
+      {"cli": "codex", "model": "varsayilan", "efor": "medium"}
+    ],
+    "arastirma": [
+      {"cli": "agy", "model": "varsayilan", "efor": "high"},
+      {"cli": "codex", "model": "varsayilan", "efor": "high"}
+    ],
+    "mekanik-tasima": [
+      {"cli": "codex", "model": "varsayilan", "efor": "low"},
+      {"cli": "agy", "model": "varsayilan", "efor": "low"}
+    ],
+    "basit": [
+      {"cli": "yerel", "model": "varsayilan", "efor": "low"},
+      {"cli": "agy", "model": "varsayilan", "efor": "low"},
+      {"cli": "codex", "model": "varsayilan", "efor": "low"}
+    ]
+  },
+  "yedek": {
+    "kod-duzeltme": [{"cli": "claude", "model": "varsayilan", "efor": "high"}],
+    "inceleme": [{"cli": "claude", "model": "varsayilan", "efor": "high"}],
+    "turkce-belge": [{"cli": "claude", "model": "varsayilan", "efor": "medium"}],
+    "arastirma": [{"cli": "claude", "model": "varsayilan", "efor": "high"}],
+    "mekanik-tasima": [{"cli": "claude", "model": "varsayilan", "efor": "low"}],
+    "basit": []
+  },
+  "olcumler": {},
+  "islenmis_sonuclar": {}
+}

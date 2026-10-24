@@ -1,0 +1,4 @@
+{
+  "README.md": "# Not düzenleyici\n\n## Amaç\nYerel Markdown notlarının adlarını raporlar. Dosyaları değiştirmez.\n\n## Kullanım\nPython 3 ile `python3 duzenle.py notlar` çalıştırılır; ek bağımlılık gerekmez.\n\n## Girer\nKebab-case adlı `.md` notları.\n\n## Girmez\nKimlik bilgileri, görseller ve indirilen arşivler.\n\n## Adlandırma\nDosya adları küçük harfli, aksansız kebab-case biçimindedir; örnek: `gunluk-not.md`.\n",
+  "sema.md": "# README şeması\n\nBirinci satır `# Not düzenleyici` olmalı. İkinci düzey başlıklar: `Amaç`, `Kullanım`, `Girer`, `Girmez`, `Adlandırma`. Her bölüm boş olmayan açıklama içerir.\n\nAraç: `python3 duzenle.py notlar`, yalnız yerel Markdown notlarının adlarını raporlar; dosya değiştirmez. Girdi: kebab-case adlı `.md` notları. Girdi olmayan: kimlik bilgileri, görseller, indirilen arşivler. Bağımlılık: Python 3 standart kütüphanesi. Araç kodu bu belgede sağlanmaz; verilen davranışı belgele, çalıştırmayı deneme.\n"
+}

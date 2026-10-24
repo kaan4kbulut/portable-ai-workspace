@@ -6,6 +6,7 @@ Her belge başında `kaynak:` ve `tarih:` satırı; iddia varsa kanıt bağlant�
 | Klasör | İçerik |
 |---|---|
 | `araclar/` | CLI/araç kullanım notları, karşılaştırmalar (Claude Code, Codex, opencode, agy, gh, docker…) |
+| `arastirmalar/` | kaynaklı araştırma raporları, konu başına klasör, `DIZIN.md` |
 | `modeller/` | model kartları, ölçüm özetleri, seçim tabloları |
 | `saglayicilar/` | Anthropic/OpenAI/Google… kullanım şartı özetleri, kota tabloları (kimlik yok) |
 | `teknoloji/` | dil, çerçeve, altyapı notları |

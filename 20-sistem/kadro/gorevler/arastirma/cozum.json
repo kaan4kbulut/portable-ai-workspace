@@ -1,0 +1,5 @@
+{
+  "README.md": "# Görev dosyaları\n\n## Girer\nBu görevin referans çözümü; özgün dosya adları korunur.\n\n## Girmez\nDeğerlendirici, beklenen sonuç listesi ve model oturumları.\n",
+  "kaynaklar.md": "# Sabit kaynak özeti\n\n[1] https://docs.python.org/3/library/unittest.html\nPython unittest test keşfi yapar; TestCase ile test durumları yazılır.\n\n[2] https://docs.python.org/3/library/pathlib.html\npathlib nesne tabanlı dosya sistemi yolları sağlar; PurePath ailesi dosya sistemine erişmeden yol işlemleri yapar.\n\nBu alıntı olmayan kısa kaynak notları çevrimdışı görev girdisidir; değerlendirme ağa çıkmaz.\n",
+  "rapor.md": "# Küçük Python araçlarında test ve yol yönetimi\n\n## Özet\n`unittest`, TestCase ile test yazmayı ve test keşfini sağlar [1]. `pathlib` yol işlemlerini nesnelerle ifade eder; PurePath dosya sistemine erişmeden yol hesaplamasına uygundur [2]. Bu ikisi küçük araçlarda test ve yol kodunun anlaşılmasını kolaylaştırabilir.\n\n## Kaynaklar\n[1] https://docs.python.org/3/library/unittest.html\n[2] https://docs.python.org/3/library/pathlib.html\n"
+}

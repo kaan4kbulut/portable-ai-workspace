@@ -283,5 +283,46 @@ class SablonVeKapsayici(unittest.TestCase):
         self.assertFalse(any(k.endswith(("40-projeler/aktif", "40-projeler/deneme")) for _, k in kodlar), kodlar)
 
 
+class Gezin(unittest.TestCase):
+    def test_ic_ice_repo_atlanir(self):
+        d, kok = yeni_kok()
+        with d:
+            dis = kok / "70-kutuphane" / "arastirmalar"
+            (dis / "konu").mkdir(parents=True)
+            (dis / "a.md").write_text("x", encoding="utf-8")
+            (dis / "konu" / "b.md").write_text("x", encoding="utf-8")
+            repo = dis / "konu" / "proje"
+            (repo / ".git").mkdir(parents=True)
+            (repo / "c.md").write_text("x", encoding="utf-8")
+            (repo / "alt").mkdir()
+            (repo / "alt" / "d.md").write_text("x", encoding="utf-8")
+            self.assertEqual({p.name for p in kt._gezin(dis)}, {"a.md", "b.md"})
+
+    def test_baslangic_klasoru_repo_olsa_da_gezilir(self):
+        d, kok = yeni_kok()
+        with d:
+            kok_repo = kok / "70-kutuphane" / "arastirmalar"
+            (kok_repo / ".git").mkdir(parents=True)
+            (kok_repo / "x.md").write_text("x", encoding="utf-8")
+            self.assertEqual({p.name for p in kt._gezin(kok_repo)}, {"x.md"})
+
+
+class RaporAtlama(unittest.TestCase):
+    def test_readme_rapor_sayilmaz(self):
+        d, kok = yeni_kok()
+        with d:
+            ar = kok / "70-kutuphane" / "arastirmalar"
+            (ar / "konu").mkdir(parents=True)
+            (ar / "README.md").write_text("# Kütüphane\n", encoding="utf-8")
+            (ar / "konu" / "README.md").write_text("# Konu\n", encoding="utf-8")
+            (ar / "DIZIN.md").write_text("- [a](konu/a.md)\n", encoding="utf-8")
+            (ar / "konu" / "a.md").write_text("# A\nKaynak denetimi: 1 sayfa\n", encoding="utf-8")
+            (ar / "konu" / "b.md").write_text("# B\nsadece metin\n", encoding="utf-8")
+            kodlar = {(b["kod"], b["konu"]) for b in kt.denetle(kok, bugun=BUGUN)["bulgular"]}
+            self.assertFalse(any("README.md" in konu for _, konu in kodlar), kodlar)
+            self.assertIn(("dizinsiz_rapor", "70-kutuphane/arastirmalar/konu/b.md"), kodlar)
+            self.assertIn(("kaynak_denetimi_yok", "70-kutuphane/arastirmalar/konu/b.md"), kodlar)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

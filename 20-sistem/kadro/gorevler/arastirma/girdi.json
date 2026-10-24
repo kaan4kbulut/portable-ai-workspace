@@ -1,0 +1,4 @@
+{
+  "README.md": "# Görev dosyaları\n\n## Girer\nBu görevin başlangıç dosyaları; özgün dosya adları korunur.\n\n## Girmez\nDeğerlendirici, beklenen sonuç listesi ve model oturumları.\n",
+  "kaynaklar.md": "# Sabit kaynak özeti\n\n[1] https://docs.python.org/3/library/unittest.html\nPython unittest test keşfi yapar; TestCase ile test durumları yazılır.\n\n[2] https://docs.python.org/3/library/pathlib.html\npathlib nesne tabanlı dosya sistemi yolları sağlar; PurePath ailesi dosya sistemine erişmeden yol işlemleri yapar.\n\nBu alıntı olmayan kısa kaynak notları çevrimdışı görev girdisidir; değerlendirme ağa çıkmaz.\n"
+}
